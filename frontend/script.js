@@ -1,6 +1,7 @@
 // document.body.style.display = 'hidden'; //hide everything
 // document.body.style.display = 'block'; //show the page
 const documentElement = document.getElementById('document');
+const pointerTextInput = document.getElementById('pointerTextInput');
 const xAxisInput = document.getElementById('xAxis');
 const yAxisInput = document.getElementById('yAxis');
 const fontSizeInput = document.getElementById('fontSize');
@@ -219,6 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Error in copying text
         window.alert('Failed to copy text: ' + err);
       });
+  });
+
+  pointerTextInput.addEventListener('input', (event) => {
+    const textValue = event.target.value;
+    updateText(textValue);
   });
 });
 //#endregion drag region
