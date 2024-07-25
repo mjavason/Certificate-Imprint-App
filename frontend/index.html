@@ -20,7 +20,7 @@
         display: inline-block;
         width: 70%;
         height: 5rem;
-        margin: 20px;
+        /* margin: 20px; */
       }
 
       input {
@@ -122,14 +122,20 @@
         </div>
       </form>
 
-      <label for="settings">Certificate Configs</label>
-      <textarea readonly name="settings" class="settings" id="settingsTextArea">
+      <div class="settingsForm">
+        <label for="settings">Certificate Configs</label>
+        <textarea
+          readonly
+          name="settings"
+          class="settings"
+          id="settingsTextArea"
+        >
 top: 370px;
 left: 850px;
 font-size: 70px;
 color: #000;
-        </textarea
-      >
+        </textarea>
+      </div>
 
       <br />
       <input
