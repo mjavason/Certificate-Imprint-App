@@ -6,6 +6,7 @@ const yAxisInput = document.getElementById('yAxis');
 const fontSizeInput = document.getElementById('fontSize');
 const pointerColorInput = document.getElementById('pointerColor');
 const imageURLInput = document.getElementById('imageURLInput');
+const settingsTextArea = document.getElementById('settingsTextArea');
 const loadImageButton = document.getElementById('loadImage');
 const draggableElement = document.getElementById('draggableElement');
 const verticalLine = document.getElementById('verticalLine');
@@ -14,12 +15,14 @@ const horizontalLine = document.getElementById('horizontalLine');
 let imageHeight = 0;
 let imageWidth = 0;
 
-let pointerTextValue = 'text';
-let pointerXAxisValue = 0;
-let pointerYAxisValue = 0;
-let pointerFontSizeValue = 0;
-let pointerColorValue = 0;
-let fontStyleValue = 0;
+let settingsValues = {
+  text: 'text',
+  xAxis: 0,
+  yAxis: 0,
+  fontSize: 0,
+  color: 'red',
+  fontStyle: `'Courier New', Courier, monospace`,
+};
 
 loadImageButton.addEventListener('click', () => {
   const imageUrl = imageURLInput.value; // Path to your image
@@ -27,12 +30,6 @@ loadImageButton.addEventListener('click', () => {
 });
 
 function loadImage(imageUrl = 'document.jpg') {
-  //   updateColor('brown');
-  //   updateFontSize(50);
-  //   updateText('Orji Michael Chukwuebuka');
-  //   updateFontStyle()
-
-  console.log('inside loadImage');
   documentElement.style.aspectRatio = 0;
   documentElement.style.backgroundImage = `url(${imageUrl})`; // Provide the path to your image
   documentElement.style.backgroundSize = 'cover';
@@ -50,8 +47,11 @@ function loadImage(imageUrl = 'document.jpg') {
       //testing actual width and height
       documentElement.style.width = `${img.width}px`;
       documentElement.style.height = `${img.height}px`;
+
       imageHeight = img.height;
       imageWidth = img.width;
+
+      updateSettingsTextArea();
     };
   } catch (e) {
     window.alert(e.message);
@@ -60,22 +60,41 @@ function loadImage(imageUrl = 'document.jpg') {
 
 function updateText(update) {
   draggableElement.innerText = update;
+  settingsValues.text = update;
+  updateSettingsTextArea();
 }
+
 function updateXAxis(update) {
   draggableElement.style.top = `${update}px`;
+  settingsValues.xAxis = update;
+  updateSettingsTextArea();
 }
+
 function updateYAxis(update) {
   draggableElement.style.top = `${update}px`;
+  settingsValues.yAxis = update;
+  updateSettingsTextArea();
 }
+
 function updateFontSize(update) {
   draggableElement.style.fontSize = `${update}px`;
+  settingsValues.fontSize = update;
+  updateSettingsTextArea();
 }
+
 function updateColor(update) {
   draggableElement.style.color = update;
+  settingsValues.color = update;
+  updateSettingsTextArea();
+}
+
+function updateSettingsTextArea() {
+  settingsTextArea.innerText = JSON.stringify(settingsValues);
 }
 
 function updateFontStyle(update = `'Courier New', Courier, monospace`) {
   draggableElement.style.fontFamily = update;
+  updateSettingsTextArea();
 }
 
 //#region drag region
@@ -184,6 +203,22 @@ document.addEventListener('DOMContentLoaded', () => {
   pointerColorInput.addEventListener('input', function (event) {
     const colorValue = event.target.value;
     updateColor(colorValue);
+  });
+
+  settingsTextArea.addEventListener('click', function () {
+    // Get the inner text of the element
+    const textToCopy = this.value;
+
+    // Use the Clipboard API to write text to the clipboard
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        window.alert('Config copied');
+      })
+      .catch((err) => {
+        // Error in copying text
+        window.alert('Failed to copy text: ' + err);
+      });
   });
 });
 //#endregion drag region
