@@ -17,10 +17,10 @@ let imageHeight = 0;
 let imageWidth = 0;
 
 let settingsValues = {
-  text: 'text',
+  text: '[text]',
   xAxis: 0,
   yAxis: 0,
-  fontSize: 0,
+  fontSize: 50,
   color: 'red',
   fontStyle: `'Courier New', Courier, monospace`,
 };
@@ -147,7 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
         y = viewportHeight - elementHeight;
 
       draggableElement.style.left = `${x}px`;
+      xAxisInput.value = x;
       draggableElement.style.top = `${y}px`;
+      yAxisInput.value = y;
 
       // Define a range around the middle of the screen
       const centerRange = 20; // Width in pixels of the center zone
@@ -225,6 +227,21 @@ document.addEventListener('DOMContentLoaded', () => {
   pointerTextInput.addEventListener('input', (event) => {
     const textValue = event.target.value;
     updateText(textValue);
+  });
+
+  xAxisInput.addEventListener('input', (event) => {
+    const xAxisValue = event.target.value;
+    updateXAxis(xAxisValue);
+  });
+
+  yAxisInput.addEventListener('input', (event) => {
+    const yAxisValue = event.target.value;
+    updateYAxis(yAxisValue);
+  });
+
+  fontSizeInput.addEventListener('input', (event) => {
+    const fontSizeValue = event.target.value;
+    updateYAxis(fontSizeValue);
   });
 });
 //#endregion drag region
