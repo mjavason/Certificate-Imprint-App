@@ -1,14 +1,25 @@
 // document.body.style.display = 'hidden'; //hide everything
 // document.body.style.display = 'block'; //show the page
 const documentElement = document.getElementById('document');
-const xAxis = document.getElementById('xAxis');
-const yAxis = document.getElementById('yAxis');
-const fontSize = document.getElementById('fontSize');
-const pointerColor = document.getElementById('pointerColor');
+const xAxisInput = document.getElementById('xAxis');
+const yAxisInput = document.getElementById('yAxis');
+const fontSizeInput = document.getElementById('fontSize');
+const pointerColorInput = document.getElementById('pointerColor');
 const imageURLInput = document.getElementById('imageURLInput');
 const loadImageButton = document.getElementById('loadImage');
+const draggableElement = document.getElementById('draggableElement');
+const verticalLine = document.getElementById('verticalLine');
+const horizontalLine = document.getElementById('horizontalLine');
+
 let imageHeight = 0;
 let imageWidth = 0;
+
+let pointerTextValue = 'text';
+let pointerXAxisValue = 0;
+let pointerYAxisValue = 0;
+let pointerFontSizeValue = 0;
+let pointerColorValue = 0;
+let fontStyleValue = 0;
 
 loadImageButton.addEventListener('click', () => {
   const imageUrl = imageURLInput.value; // Path to your image
@@ -16,6 +27,11 @@ loadImageButton.addEventListener('click', () => {
 });
 
 function loadImage(imageUrl = 'document.jpg') {
+  //   updateColor('brown');
+  //   updateFontSize(50);
+  //   updateText('Orji Michael Chukwuebuka');
+  //   updateFontStyle()
+
   console.log('inside loadImage');
   documentElement.style.aspectRatio = 0;
   documentElement.style.backgroundImage = `url(${imageUrl})`; // Provide the path to your image
@@ -42,11 +58,28 @@ function loadImage(imageUrl = 'document.jpg') {
   }
 }
 
+function updateText(update) {
+  draggableElement.innerText = update;
+}
+function updateXAxis(update) {
+  draggableElement.style.top = `${update}px`;
+}
+function updateYAxis(update) {
+  draggableElement.style.top = `${update}px`;
+}
+function updateFontSize(update) {
+  draggableElement.style.fontSize = `${update}px`;
+}
+function updateColor(update) {
+  draggableElement.style.color = update;
+}
+
+function updateFontStyle(update = `'Courier New', Courier, monospace`) {
+  draggableElement.style.fontFamily = update;
+}
+
 //#region drag region
 document.addEventListener('DOMContentLoaded', () => {
-  const draggableElement = document.getElementById('draggableElement');
-  const verticalLine = document.getElementById('verticalLine');
-  const horizontalLine = document.getElementById('horizontalLine');
   loadImage();
 
   let offsetX = 0,
@@ -146,5 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
   draggableElement.addEventListener('touchstart', startDrag);
   document.addEventListener('touchmove', drag);
   document.addEventListener('touchend', endDrag);
+
+  // Updates
+  pointerColorInput.addEventListener('input', function (event) {
+    const colorValue = event.target.value;
+    updateColor(colorValue);
+  });
 });
 //#endregion drag region
