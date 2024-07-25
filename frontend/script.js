@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fontSizeInput.addEventListener('input', (event) => {
     const fontSizeValue = event.target.value;
-    updateYAxis(fontSizeValue);
+    updateFontSize(fontSizeValue);
   });
 });
 //#endregion drag region
