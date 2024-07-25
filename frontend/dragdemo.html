@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Draggable Element with Center Line Indicators</title>
+    <style>
+      .draggable {
+        width: 100px;
+        height: 100px;
+        background-color: lightblue;
+        border-radius: 100%;
+        text-align: center;
+        position: absolute;
+        cursor: grab;
+        user-select: none; /* Prevent text selection */
+      }
+
+      .vertical-line {
+        width: 2px;
+        height: 100%;
+        background-color: red;
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        display: none; /* Initially hidden */
+      }
+
+      .horizontal-line {
+        width: 100%;
+        height: 2px;
+        background-color: green;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        display: none; /* Initially hidden */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="draggableElement" class="draggable">
+      <p style="padding-top: 20%">Drag me!</p>
+    </div>
+    <div id="verticalLine" class="vertical-line"></div>
+    <div id="horizontalLine" class="horizontal-line"></div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const draggableElement = document.getElementById('draggableElement');
+        const verticalLine = document.getElementById('verticalLine');
+        const horizontalLine = document.getElementById('horizontalLine');
+
+        let offsetX = 0,
+          offsetY = 0;
+        let isDragging = false;
+
+        // Function to handle the start of dragging
+        function startDrag(event) {
+          const clientX =
+            event.type === 'touchstart'
+              ? event.touches[0].clientX
+              : event.clientX;
+          const clientY =
+            event.type === 'touchstart'
+              ? event.touches[0].clientY
+              : event.clientY;
+
+          offsetX = clientX - draggableElement.getBoundingClientRect().left;
+          offsetY = clientY - draggableElement.getBoundingClientRect().top;
+          isDragging = true;
+          draggableElement.style.cursor = 'grabbing';
+          event.preventDefault();
+        }
+
+        // Function to handle the dragging motion
+        function drag(event) {
+          if (isDragging) {
+            const clientX =
+              event.type === 'touchmove'
+                ? event.touches[0].clientX
+                : event.clientX;
+            const clientY =
+              event.type === 'touchmove'
+                ? event.touches[0].clientY
+                : event.clientY;
+
+            let x = clientX - offsetX;
+            let y = clientY - offsetY;
+
+            // Get the dimensions of the viewport
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // Get the dimensions of the draggable element
+            const elementWidth = draggableElement.offsetWidth;
+            const elementHeight = draggableElement.offsetHeight;
+
+            // Ensure the element stays within the viewport boundaries
+            if (x < 0) x = 0;
+            if (y < 0) y = 0;
+            if (x + elementWidth > viewportWidth)
+              x = viewportWidth - elementWidth;
+            if (y + elementHeight > viewportHeight)
+              y = viewportHeight - elementHeight;
+
+            draggableElement.style.left = `${x}px`;
+            draggableElement.style.top = `${y}px`;
+
+            // Define a range around the middle of the screen
+            const centerRange = 20; // Width in pixels of the center zone
+
+            // Check if the element is in the middle of the screen within the range
+            const isCenteredHorizontally =
+              Math.abs(x + elementWidth / 2 - viewportWidth / 2) <= centerRange;
+            const isCenteredVertically =
+              Math.abs(y + elementHeight / 2 - viewportHeight / 2) <=
+              centerRange;
+
+            // Show the vertical line if centered within range horizontally and accurately position the element
+            // verticalLine.style.display = isCenteredHorizontally
+            //   ? 'block'
+            //   : 'none';
+            if (isCenteredHorizontally) {
+              verticalLine.style.display = 'block';
+              draggableElement.style.left = `${Math.abs(
+                elementWidth / 2 - viewportWidth / 2
+              )}px`;
+            } else {
+              verticalLine.style.display = 'none';
+            }
+
+            // Show the horizontal line if centered within range vertically and accurately position the element
+            // horizontalLine.style.display = isCenteredVertically
+            //   ? 'block'
+            //   : 'none';
+            if (isCenteredVertically) {
+              horizontalLine.style.display = 'block';
+              draggableElement.style.top = `${Math.abs(
+                elementHeight / 2 - viewportHeight / 2
+              )}px`;
+            } else {
+              horizontalLine.style.display = 'none';
+            }
+          }
+        }
+
+        // Function to handle the end of dragging
+        function endDrag() {
+          isDragging = false;
+          draggableElement.style.cursor = 'grab';
+          verticalLine.style.display = 'none'; // Hide vertical line when dragging ends
+          horizontalLine.style.display = 'none'; // Hide horizontal line when dragging ends
+        }
+
+        // Mouse events
+        draggableElement.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+
+        // Touch events
+        draggableElement.addEventListener('touchstart', startDrag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('touchend', endDrag);
+      });
+    </script>
+  </body>
+</html>

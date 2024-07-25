@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="script.js" defer></script>
+    <!-- Added defer to ensure script runs after DOM loads -->
+    <style>
+      .text-input {
+        /* position: absolute; */
+        /* Use top, left, right, bottom to position the text */
+        /* top: 370px;
+            left: 850px; */
+        font-size: 70px;
+        color: #000;
+      }
+
+      .settings {
+        display: inline-block;
+        width: 70%;
+        height: 5rem;
+        margin: 20px;
+      }
+
+      input {
+        display: inline-block;
+      }
+
+      label {
+        display: block;
+      }
+
+      .settingsForm {
+        margin: 1rem;
+      }
+
+      .form-container {
+        text-align: center;
+        border: 2px solid red;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+
+      button {
+        color: green;
+      }
+
+      /* dragging */
+      .draggable {
+        position: absolute;
+        cursor: grab;
+        user-select: none; /* Prevent text selection */
+      }
+
+      .vertical-line {
+        width: 2px;
+        height: 100%;
+        background-color: red;
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        display: none; /* Initially hidden */
+      }
+
+      .horizontal-line {
+        width: 100%;
+        height: 2px;
+        background-color: green;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        display: none; /* Initially hidden */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="document" id="document">
+      <div id="verticalLine" class="vertical-line"></div>
+      <div id="horizontalLine" class="horizontal-line"></div>
+      <div class="text-input draggable" id="draggableElement">[text]</div>
+    </div>
+
+    <div class="form-container">
+      <form action="">
+        <div class="settingsForm">
+          <label for="xAxis">X Axis</label>
+          <input type="number" name="x-axis" id="xAxis" />
+        </div>
+
+        <div class="settingsForm">
+          <label for="yAxis">Y Axis</label>
+          <input type="number" name="y-axis" id="yAxis" />
+        </div>
+
+        <div class="settingsForm">
+          <label for="pointerFontSize">Font Size</label>
+          <input type="number" name="font-size" id="pointerFontSize" />
+        </div>
+
+        <div class="settingsForm">
+          <label for="pointerColor">Color</label>
+          <input type="color" name="color" id="pointerColor" />
+        </div>
+      </form>
+
+      <textarea readonly name="settings" class="settings" id="settings">
+top: 370px;
+left: 850px;
+font-size: 70px;
+color: #000;
+        </textarea
+      >
+
+      <br />
+      <input
+        placeholder="https://image/awesome.jpg"
+        type="text"
+        name="imageURL"
+        id="imageURLInput"
+      />
+      <button id="loadImage">Load image</button>
+    </div>
+  </body>
+</html>
