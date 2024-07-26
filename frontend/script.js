@@ -6,6 +6,7 @@ const xAxisInput = document.getElementById('xAxis');
 const yAxisInput = document.getElementById('yAxis');
 const fontSizeInput = document.getElementById('fontSizeInput');
 const pointerColorInput = document.getElementById('pointerColor');
+const pointerFontStyleSelect = document.getElementById('pointerFontStyle');
 const imageURLInput = document.getElementById('imageURLInput');
 const settingsTextArea = document.getElementById('settingsTextArea');
 const loadImageButton = document.getElementById('loadImage');
@@ -66,7 +67,7 @@ function updateText(update) {
 }
 
 function updateXAxis(update) {
-  draggableElement.style.top = `${update}px`;
+  draggableElement.style.left = `${update}px`;
   settingsValues.xAxis = update;
   updateSettingsTextArea();
 }
@@ -95,6 +96,7 @@ function updateSettingsTextArea() {
 
 function updateFontStyle(update = `'Courier New', Courier, monospace`) {
   draggableElement.style.fontFamily = update;
+  settingsValues.fontStyle = update;
   updateSettingsTextArea();
 }
 
@@ -192,6 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
     horizontalLine.style.display = 'none'; // Hide horizontal line when dragging ends
   }
 
+  draggableElement.addEventListener('click', () => {
+    pointerTextInput.select();
+    pointerTextInput.focus();
+  });
+
   // Mouse events
   draggableElement.addEventListener('mousedown', startDrag);
   document.addEventListener('mousemove', drag);
@@ -242,6 +249,11 @@ document.addEventListener('DOMContentLoaded', () => {
   fontSizeInput.addEventListener('input', (event) => {
     const fontSizeValue = event.target.value;
     updateFontSize(fontSizeValue);
+  });
+
+  pointerFontStyleSelect.addEventListener('change', (event) => {
+    const fontStyleValue = event.target.value;
+    updateFontStyle(fontStyleValue);
   });
 });
 //#endregion drag region
