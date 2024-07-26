@@ -8,11 +8,7 @@
     <!-- Added defer to ensure script runs after DOM loads -->
     <style>
       .text-input {
-        /* position: absolute; */
-        /* Use top, left, right, bottom to position the text */
-        /* top: 370px;
-            left: 850px; */
-        font-size: 70px;
+        font-size: 50px;
         color: #000;
       }
 
@@ -51,6 +47,8 @@
         position: absolute;
         cursor: grab;
         user-select: none; /* Prevent text selection */
+        display: none;
+        z-index: 9999; /* Always at the top no matter what */
       }
 
       .vertical-line {
@@ -81,7 +79,13 @@
     <div class="document" id="document">
       <div id="verticalLine" class="vertical-line"></div>
       <div id="horizontalLine" class="horizontal-line"></div>
-      <div style="border: red 2px solid;" class="text-input draggable" id="draggableElement">[text]</div>
+      <div
+        style="border: red 2px solid"
+        class="text-input draggable"
+        id="draggableElement"
+      >
+        [text]
+      </div>
     </div>
 
     <div class="form-container">

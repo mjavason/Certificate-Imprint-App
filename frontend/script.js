@@ -54,6 +54,7 @@ function loadImage(imageUrl = 'document.jpg') {
       imageWidth = img.width;
 
       updateSettingsTextArea();
+      draggableElement.style.display = 'block';
     };
   } catch (e) {
     window.alert(e.message);
