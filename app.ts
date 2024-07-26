@@ -6,11 +6,11 @@ import dotenv from 'dotenv';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import morgan from 'morgan';
-import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import multer, { FileFilterCallback } from 'multer';
-const pdf2html = require('pdf2html');
+import handlebars from 'handlebars';
+import imageSize from 'image-size';
 
 //#region App Setup
 const app = express();
@@ -58,9 +58,10 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(morgan('dev'));
 const tempDir = os.tmpdir(); // Get the system temporary directory
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, tempDir); // Use the system temporary directory
-  },
+  // destination: function (req, file, cb) {
+  //   cb(null, tempDir); // Use the system temporary directory
+  // },
+  destination: './uploads',
   filename: function (req, file, cb) {
     cb(null, file.originalname); // Keep the original file name
   },
@@ -84,7 +85,7 @@ const upload = multer({
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // Limit file size to 5 MB
-  }
+  },
   // fileFilter,
 });
 
@@ -95,30 +96,51 @@ const PORT = process.env.PORT || 3000;
 const baseURL = 'https://httpbin.org';
 //#endregion
 
-// Function to convert PDF to HTML using pdf2html library
-function convertPdfToHtmlUsingLibrary(inputPdf: any) {
-  return new Promise((resolve, reject) => {
-    pdf2html.html(inputPdf, (err: any, html: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(html);
-      }
-    });
-  });
+//#region Code here
+function applyStylesFromJSON(styleObject: {
+  width: string;
+  xAxis: string;
+  yAxis: string;
+  fontSize: string;
+  color: string;
+  fontStyle: string;
+  alignment: string;
+}) {
+  // Construct CSS text from JSON object
+  const cssText = `
+    width: ${styleObject.width}px;
+    left: ${styleObject.xAxis}px;
+    top: ${styleObject.yAxis}px;
+    font-size: ${styleObject.fontSize}px;
+    color: ${styleObject.color};
+    font-style: ${styleObject.fontStyle || 'normal'};
+    text-align: ${styleObject.alignment};
+    position: absolute;
+  `;
+
+  return cssText;
 }
 
-//#region Code here
+async function renderMailTemplate(templatePath: string, data: object) {
+  // Load the email template
+  // const templatePath = './email-templates/welcome-email.html';
+  const emailTemplate = fs.readFileSync(templatePath, 'utf-8');
+
+  // Compile the template
+  const compiledTemplate = handlebars.compile(emailTemplate);
+  return compiledTemplate(data);
+}
+
 /**
  * @swagger
- * /extract-text:
+ * /batch-imprint:
  *   post:
- *     summary: Upload an image file to extract text
- *     description: Extracts text from an uploaded image and returns it as JSON
+ *     summary: Upload a template file to be imprinted with multiple different data
+ *     description: With the coordinates and data, just leave the rest to us. You'll get a zip file with all the images.
  *     tags:
- *       - Image OCR
+ *       - Imprint
  *     requestBody:
- *       description: Image file to be processed
+ *       description: Image file and data to be processed
  *       required: true
  *       content:
  *         multipart/form-data:
@@ -128,9 +150,24 @@ function convertPdfToHtmlUsingLibrary(inputPdf: any) {
  *               file:
  *                 type: string
  *                 format: binary
+ *               data:
+ *                 type: object
+ *                 description: JSON object with coordinates and other imprint data
+ *                 properties:
+ *                   coordinates:
+ *                     type: object
+ *                     description: Coordinates for imprinting
+ *                     properties:
+ *                       x:
+ *                         type: number
+ *                       y:
+ *                         type: number
+ *                   text:
+ *                     type: string
+ *                     description: Text to imprint
  *     responses:
  *       '200':
- *         description: Successfully extracted text from the image
+ *         description: Successfully processed the request
  *         content:
  *           application/json:
  *             schema:
@@ -147,7 +184,7 @@ function convertPdfToHtmlUsingLibrary(inputPdf: any) {
  */
 
 app.post(
-  '/extract-text',
+  '/batch-imprint',
   upload.single('file'),
   async (req: Request, res: Response) => {
     if (!req.file) {
@@ -157,39 +194,22 @@ app.post(
       });
     }
 
-    const filePath = req.file.path;
+    console.log(req.body.data);
 
-    try {
-      const extractedText = await convertPdfToHtmlUsingLibrary(filePath);
+    const filePath = req.file.path.replace(/\\/g, '/');
+    const imageDimensions = imageSize(filePath);
 
-      // Example usage
-      const inputPdfPath = path.join(__dirname, 'input.pdf');
-      const outputHtmlPath = path.join(__dirname, 'output.html');
+    const styles = applyStylesFromJSON(JSON.parse(req.body.data));
 
-      convertPdfToHtmlUsingLibrary(inputPdfPath)
-        .then((html) => {
-          fs.writeFileSync(outputHtmlPath, html as any);
-          console.log('PDF successfully converted to HTML and saved to file.');
-        })
-        .catch((error) => {
-          console.error('Failed to convert PDF to HTML:', error);
-        });
+    const renderedHtml = await renderMailTemplate('template.html', {
+      imageUrl: filePath,
+      imageWidth: imageDimensions.width,
+      imageHeight: imageDimensions.height,
+      bodyWithConfigs: `<div style="${styles}">The world is your canvas</div>`,
+    });
 
-      if (!extractedText)
-        return res
-          .status(400)
-          .send({ success: false, message: 'Unknown error occured' });
-
-      res.send({
-        success: true,
-        message: 'Image text extracted successfully',
-        data: extractedText,
-      });
-    } catch (e: any) {
-      return res
-        .status(400)
-        .send({ success: false, message: 'Unknown error occured' });
-    }
+    // console.log(renderedHtml);
+    return res.send(renderedHtml);
   }
 );
 //#endregion

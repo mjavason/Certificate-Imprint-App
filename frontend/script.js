@@ -19,13 +19,14 @@ let imageHeight = 0;
 let imageWidth = 0;
 
 let settingsValues = {
-  width: 200,
-  text: '[text]',
-  xAxis: 0,
-  yAxis: 0,
-  fontSize: 70,
+  width: '200',
+  // text: '[text]',
+  xAxis: '0',
+  yAxis: '0',
+  fontSize: '70',
   color: '#000',
   fontStyle: ``,
+  alignment: 'center'
 };
 
 loadImageButton.addEventListener('click', () => {
@@ -77,8 +78,8 @@ function loadImage(imageUrl = 'document.jpg') {
 
 function updateText(update) {
   draggableElement.innerText = update;
-  settingsValues.text = update;
-  updateSettingsTextArea();
+  // settingsValues.text = update;
+  // updateSettingsTextArea();
 }
 
 function updateXAxis(update) {
@@ -170,8 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (y + elementHeight > viewportHeight)
         y = viewportHeight - elementHeight;
 
-      updateXAxis(x);
-      updateYAxis(y);
+      updateXAxis(x.toString());
+      updateYAxis(y.toString());
       xAxisInput.value = x;
       yAxisInput.value = y;
 
