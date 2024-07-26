@@ -1,3 +1,5 @@
+// if the element youre making draggable has content within that you wish to interact with, you need to ensure the parent elements z-index is lower than its child/children.
+
 document.addEventListener('DOMContentLoaded', () => {
   const draggableElement = document.getElementById('draggable');
 
