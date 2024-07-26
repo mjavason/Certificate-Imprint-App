@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const draggableElement = document.getElementById('draggable');
 
   draggableElement.style.position = 'absolute';
+  draggableElement.style.zIndex = 1; //send to the back and allow the children come forward.
   draggableElement.style.cursor = 'grab';
   draggableElement.style.top = '0px';
   draggableElement.style.left = `${
