@@ -4,11 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <script src="drag.js"></script>
     <script src="script.js" defer></script>
     <!-- Added defer to ensure script runs after DOM loads -->
     <style>
       .text-input {
-        font-size: 50px;
+        font-size: 70px;
         color: #000;
       }
 
@@ -36,6 +37,10 @@
         border: 2px solid gray;
         padding: 1rem;
         margin-top: 1rem;
+        z-index: 2;
+      }
+      #draggable {
+        z-index: 1;
       }
 
       button {
@@ -76,19 +81,7 @@
   </head>
 
   <body>
-    <div class="document" id="document">
-      <div id="verticalLine" class="vertical-line"></div>
-      <div id="horizontalLine" class="horizontal-line"></div>
-      <div
-        style="border: red 2px solid"
-        class="text-input draggable"
-        id="draggableElement"
-      >
-        [text]
-      </div>
-    </div>
-
-    <div class="form-container">
+    <div class="form-container" id="draggable">
       <form action="">
         <div class="settingsForm">
           <label for="pointer-text">Text</label>
@@ -101,20 +94,11 @@
         </div>
 
         <div class="settingsForm">
-          <label for="xAxis">X Axis</label>
-          <input value="0" type="number" name="x-axis" id="xAxis" />
-        </div>
-
-        <div class="settingsForm">
-          <label for="yAxis">Y Axis</label>
-          <input value="0" type="number" name="y-axis" id="yAxis" />
-        </div>
-
-        <div class="settingsForm">
           <label for="pointerFontSize">Font Size</label>
           <input
             type="number"
-            value="50"
+            min="0"
+            value="70"
             name="pointerFontSize"
             id="fontSizeInput"
           />
@@ -123,6 +107,7 @@
         <div class="settingsForm">
           <label for="pointerFontStyle">Font Style</label>
           <select name="pointerFontStyle" id="pointerFontStyle">
+            <option value=""></option>
             <option value="'Arial', sans-serif">Arial</option>
             <option value="'Helvetica', sans-serif">Helvetica</option>
             <option value="'Times New Roman', Times, serif">
@@ -131,7 +116,12 @@
             <option value="'Courier New', Courier, monospace">
               Courier New
             </option>
-            <option value="'Verdana', sans-serif">Verdana</option>
+            <option
+              style="font-family: 'Courier New', Courier, monospace"
+              value="'Verdana', sans-serif"
+            >
+              Verdana
+            </option>
             <option value="'Georgia', serif">Georgia</option>
             <option
               value="'Palatino Linotype', 'Book Antiqua', Palatino, serif"
@@ -171,6 +161,16 @@
         </div>
 
         <div class="settingsForm">
+          <label for="xAxis">X Axis</label>
+          <input value="0" min="0" type="number" name="x-axis" id="xAxis" />
+        </div>
+
+        <div class="settingsForm">
+          <label for="yAxis">Y Axis</label>
+          <input min="0" value="0" type="number" name="y-axis" id="yAxis" />
+        </div>
+
+        <div class="settingsForm">
           <label for="pointerColor">Color</label>
           <input type="color" name="color" id="pointerColor" />
         </div>
@@ -184,11 +184,12 @@
           class="settings"
           id="settingsTextArea"
         >
-top: 370px;
-left: 850px;
-font-size: 70px;
-color: #000;
-        </textarea>
+  top: 0px;
+  left: 0px;
+  font-size: 70px;
+  color: #000;
+          </textarea
+        >
       </div>
 
       <br />
@@ -199,6 +200,11 @@ color: #000;
         id="imageURLInput"
       />
       <button id="loadImage">Load image</button>
+    </div>
+    <div class="document" id="document">
+      <div id="verticalLine" class="vertical-line"></div>
+      <div id="horizontalLine" class="horizontal-line"></div>
+      <div class="text-input draggable" id="draggableElement">[text]</div>
     </div>
   </body>
 </html>

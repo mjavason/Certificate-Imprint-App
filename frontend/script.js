@@ -21,15 +21,24 @@ let settingsValues = {
   text: '[text]',
   xAxis: 0,
   yAxis: 0,
-  fontSize: 50,
-  color: 'red',
-  fontStyle: `'Courier New', Courier, monospace`,
+  fontSize: 70,
+  color: '#000',
+  fontStyle: ``,
 };
 
 loadImageButton.addEventListener('click', () => {
   const imageUrl = imageURLInput.value; // Path to your image
   loadImage(imageUrl);
 });
+
+function previewFontOptions() {
+  // Iterate over each option element
+  Array.from(pointerFontStyleSelect.options).forEach((option) => {
+    if (option.value) {
+      option.style.fontFamily = option.value; // Apply font family
+    }
+  });
+}
 
 function loadImage(imageUrl = 'document.jpg') {
   documentElement.style.aspectRatio = 0;
@@ -52,6 +61,9 @@ function loadImage(imageUrl = 'document.jpg') {
 
       imageHeight = img.height;
       imageWidth = img.width;
+
+      draggableElement.style.left = `${Math.abs(imageWidth / 2)}px`;
+      draggableElement.style.top = `${Math.abs(imageHeight / 2)}px`;
 
       updateSettingsTextArea();
       draggableElement.style.display = 'block';
@@ -95,7 +107,7 @@ function updateSettingsTextArea() {
   settingsTextArea.innerText = JSON.stringify(settingsValues);
 }
 
-function updateFontStyle(update = `'Courier New', Courier, monospace`) {
+function updateFontStyle(update) {
   draggableElement.style.fontFamily = update;
   settingsValues.fontStyle = update;
   updateSettingsTextArea();
@@ -104,6 +116,7 @@ function updateFontStyle(update = `'Courier New', Courier, monospace`) {
 //#region drag region
 document.addEventListener('DOMContentLoaded', () => {
   loadImage();
+  previewFontOptions();
 
   let offsetX = 0,
     offsetY = 0;
@@ -149,9 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (y + elementHeight > viewportHeight)
         y = viewportHeight - elementHeight;
 
-      draggableElement.style.left = `${x}px`;
+      updateXAxis(x);
+      updateYAxis(y);
       xAxisInput.value = x;
-      draggableElement.style.top = `${y}px`;
       yAxisInput.value = y;
 
       // Define a range around the middle of the screen
