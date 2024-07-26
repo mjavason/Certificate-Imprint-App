@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="drag.js"></script>
     <script src="script.js" defer></script>
+    <!-- <script src="drag.js"></script> -->
     <!-- Added defer to ensure script runs after DOM loads -->
     <style>
       .text-input {
@@ -49,6 +49,9 @@
         cursor: grab;
         user-select: none; /* Prevent text selection */
         display: none;
+        width: 200px;
+        border: red 2px solid;
+        text-align: center;
         z-index: 9999; /* Always at the top no matter what */
       }
 
@@ -82,8 +85,18 @@
       <div id="horizontalLine" class="horizontal-line"></div>
       <div class="text-input draggable" id="draggableElement">[text]</div>
     </div>
-    <div class="form-container">
+    <div class="form-container" id="draggable">
       <form action="">
+        <div class="settingsForm">
+            <label for="pointer-width">Width</label>
+            <input
+              type="number"
+              min="0"
+              name="pointer-width"
+              id="pointerWidth"
+              value="200"
+            />
+          </div>
         <div class="settingsForm">
           <label for="pointer-text">Text</label>
           <input

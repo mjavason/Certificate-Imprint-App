@@ -7,6 +7,7 @@ const yAxisInput = document.getElementById('yAxis');
 const fontSizeInput = document.getElementById('fontSizeInput');
 const pointerColorInput = document.getElementById('pointerColor');
 const pointerFontStyleSelect = document.getElementById('pointerFontStyle');
+const pointerWidthInput = document.getElementById('pointerWidth');
 const imageURLInput = document.getElementById('imageURLInput');
 const settingsTextArea = document.getElementById('settingsTextArea');
 const loadImageButton = document.getElementById('loadImage');
@@ -18,6 +19,7 @@ let imageHeight = 0;
 let imageWidth = 0;
 
 let settingsValues = {
+  width: 200,
   text: '[text]',
   xAxis: 0,
   yAxis: 0,
@@ -94,6 +96,12 @@ function updateYAxis(update) {
 function updateFontSize(update) {
   draggableElement.style.fontSize = `${update}px`;
   settingsValues.fontSize = update;
+  updateSettingsTextArea();
+}
+
+function updateWidth(update) {
+  draggableElement.style.width = `${update}px`;
+  settingsValues.width = update;
   updateSettingsTextArea();
 }
 
@@ -268,6 +276,11 @@ document.addEventListener('DOMContentLoaded', () => {
   pointerFontStyleSelect.addEventListener('change', (event) => {
     const fontStyleValue = event.target.value;
     updateFontStyle(fontStyleValue);
+  });
+
+  pointerWidthInput.addEventListener('input', (event) => {
+    const width = event.target.value;
+    updateWidth(width);
   });
 });
 //#endregion drag region
