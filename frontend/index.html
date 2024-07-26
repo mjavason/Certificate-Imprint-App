@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="script.js" defer></script>
-    <!-- <script src="drag.js"></script> -->
+    <script src="drag.js"></script>
     <!-- Added defer to ensure script runs after DOM loads -->
     <style>
       .text-input {
@@ -15,7 +15,7 @@
 
       .settings {
         display: inline-block;
-        width: 70%;
+        width: 80%;
         height: 5rem;
         /* margin: 20px; */
       }
@@ -37,6 +37,9 @@
         border: 2px solid gray;
         padding: 1rem;
         margin-top: 1rem;
+        height: 20%;
+        overflow: scroll;
+        /* resize: vertical; */
       }
 
       button {
@@ -85,18 +88,18 @@
       <div id="horizontalLine" class="horizontal-line"></div>
       <div class="text-input draggable" id="draggableElement">[text]</div>
     </div>
-    <div class="form-container" id="draggable">
+    <div class="form-container"  id="draggable">
       <form action="">
         <div class="settingsForm">
-            <label for="pointer-width">Width</label>
-            <input
-              type="number"
-              min="0"
-              name="pointer-width"
-              id="pointerWidth"
-              value="200"
-            />
-          </div>
+          <label for="pointer-width">Width</label>
+          <input
+            type="number"
+            min="0"
+            name="pointer-width"
+            id="pointerWidth"
+            value="200"
+          />
+        </div>
         <div class="settingsForm">
           <label for="pointer-text">Text</label>
           <input
