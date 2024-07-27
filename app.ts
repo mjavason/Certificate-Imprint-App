@@ -37,7 +37,7 @@ const SWAGGER_OPTIONS = {
         description: 'Development Environment',
       },
       {
-        url: 'https://live.onrender.com/api/v1',
+        url: 'https://certificate-imprint-app-backend.onrender.com',
         description: 'Staging Environment',
       },
     ],
