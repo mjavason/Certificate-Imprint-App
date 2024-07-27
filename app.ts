@@ -135,7 +135,18 @@ async function convertHtmlToImage(
   imageHeight: number
 ) {
   // Launch a new browser instance
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      // '--single-process', // <- this one doesn't work in Windows
+      '--disable-gpu',
+    ],
+  });
   const page = await browser.newPage();
 
   // Set the HTML content
