@@ -18,6 +18,7 @@ const horizontalLine = document.getElementById('horizontalLine');
 let imageHeight = 0;
 let imageWidth = 0;
 
+let data = ['string'];
 let settingsValues = {
   width: '200',
   // text: '[text]',
@@ -26,8 +27,9 @@ let settingsValues = {
   fontSize: '70',
   color: '#000',
   fontStyle: ``,
-  alignment: 'center'
+  alignment: 'center',
 };
+let template = 'https://via.placeholder.com/1500';
 
 loadImageButton.addEventListener('click', () => {
   const imageUrl = imageURLInput.value; // Path to your image
@@ -44,6 +46,7 @@ function previewFontOptions() {
 }
 
 function loadImage(imageUrl = 'document.jpg') {
+  template = imageUrl;
   documentElement.style.aspectRatio = 0;
   documentElement.style.backgroundImage = `url(${imageUrl})`; // Provide the path to your image
   documentElement.style.backgroundSize = 'cover';
@@ -113,7 +116,11 @@ function updateColor(update) {
 }
 
 function updateSettingsTextArea() {
-  settingsTextArea.innerText = JSON.stringify(settingsValues);
+  settingsTextArea.innerText = JSON.stringify({
+    data,
+    template,
+    coordinates: settingsValues,
+  });
 }
 
 function updateFontStyle(update) {
