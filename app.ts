@@ -22,10 +22,10 @@ const SWAGGER_OPTIONS = {
   swaggerDefinition: {
     openapi: '3.0.0',
     info: {
-      title: 'Typescript SFA',
+      title: 'Document Batch Imprinter',
       version: '1.0.0',
       description:
-        'This is a single file typescript template app for faster idea testing and prototyping. It contains tests, one demo root API call, basic async error handling, one demo axios call and .env support.',
+        'Populate text content onto a pre-saved design template. This can be used for creating documents with dynamic content but same template design, like a certificate or award.',
       contact: {
         name: 'Orji Michael',
         email: 'orjimichael4886@gmail.com',
@@ -359,7 +359,7 @@ app.post('/batch-imprint', async (req: Request, res: Response) => {
     });
   }
   const savedImages = await convertHtmlToImage(htmlDetails);
-  
+
   let zipFilePath = `${tempDir}/${Date.now()}.zip`;
   await createZipFromFiles(savedImages, zipFilePath);
 
