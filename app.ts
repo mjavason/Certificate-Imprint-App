@@ -12,6 +12,7 @@ import path from 'path';
 import handlebars from 'handlebars';
 import imageSize from 'image-size';
 import puppeteer from 'puppeteer';
+import archiver from 'archiver';
 
 //#region App Setup
 const app = express();
@@ -220,6 +221,40 @@ async function getImageSizeFromUrl(
 }
 
 /**
+ * Creates a zip file from an array of file paths.
+ * @param filePaths - An array of file paths to include in the zip file.
+ * @param outputZipPath - The path where the zip file will be saved.
+ */
+async function createZipFromFiles(
+  filePaths: string[],
+  outputZipPath: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Create a write stream for the output zip file
+    const output = fs.createWriteStream(outputZipPath);
+
+    // Create a new archiver instance
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    // Listen for errors
+    archive.on('error', (err) => reject(err));
+
+    // Pipe archive data to the file
+    output.on('close', () => resolve());
+    archive.pipe(output);
+
+    // Append files to the archive
+    filePaths.forEach((filePath) => {
+      const fileName = path.basename(filePath);
+      archive.file(filePath, { name: fileName });
+    });
+
+    // Finalize the archive
+    archive.finalize();
+  });
+}
+
+/**
  * @swagger
  * /batch-imprint:
  *   post:
@@ -236,12 +271,10 @@ async function getImageSizeFromUrl(
  *             type: object
  *             properties:
  *               data:
- *                 type: object
- *                 description: Data for imprinting
- *                 properties:
- *                   text:
- *                     type: string
- *                     description: Text to imprint
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of strings for imprinting
  *               coordinates:
  *                 type: object
  *                 description: Coordinates for imprinting
@@ -274,7 +307,7 @@ async function getImageSizeFromUrl(
  */
 app.post('/batch-imprint', async (req: Request, res: Response) => {
   const templatePath = req.body.template; //'https://via.placeholder.com/1500';
-  const textData = req.body.data.text;
+  const textData = req.body.data;
   const coordinates = req.body.coordinates;
 
   if (!templatePath || !textData || !coordinates)
@@ -282,23 +315,29 @@ app.post('/batch-imprint', async (req: Request, res: Response) => {
 
   const imageDimensions = await getImageSizeFromUrl(templatePath);
   const styles = applyStylesFromJSON(coordinates);
+  const savedImages: string[] = [];
 
-  const renderedHtml = await renderMailTemplate('template.txt', {
-    imageUrl: 'https://via.placeholder.com/1500', //filePath,
-    imageWidth: imageDimensions.width,
-    imageHeight: imageDimensions.height,
-    bodyWithConfigs: `<div style="${styles}">${textData}</div>`,
-  });
+  for (let i = 0; i < textData.length; i++) {
+    const renderedHtml = await renderMailTemplate('template.txt', {
+      imageUrl: 'https://via.placeholder.com/1500', //filePath,
+      imageWidth: imageDimensions.width,
+      imageHeight: imageDimensions.height,
+      bodyWithConfigs: `<div style="${styles}">${textData[i]}</div>`,
+    });
 
-  let imagePath = await convertHtmlToImage(
-    renderedHtml,
-    `${tempDir}/${Date.now()}.jpg`,
-    imageDimensions.width,
-    imageDimensions.height
-  );
+    let imagePath = await convertHtmlToImage(
+      renderedHtml,
+      `${tempDir}/${i}${Date.now()}.jpg`,
+      imageDimensions.width,
+      imageDimensions.height
+    );
 
-  // console.log(renderedHtml);
-  return sendFileAsDownload(res, imagePath);
+    savedImages.push(imagePath);
+  }
+  let zipFilePath = `${tempDir}/${Date.now()}.zip`;
+  await createZipFromFiles(savedImages, zipFilePath);
+
+  return sendFileAsDownload(res, zipFilePath);
 });
 //#endregion
 
@@ -382,7 +421,7 @@ app.use((req: Request, res: Response) => {
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // throw Error('This is a sample error');
 
-  // console.log(err);
+  console.log(err);
   console.log(`${'\x1b[31m'}${err.message}${'\x1b][0m]'} `);
   return res
     .status(500)
