@@ -1,15 +1,18 @@
 {
-  "data": {
-    "text": "string"
-  },
+  "data": [
+    "Computer Engineering",
+    "Chemical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering"
+  ],
+  "template": "https://i.ibb.co/wsj6bz7/9227462-illustration-of-certificate-template-with-blank-spaces.jpg",
   "coordinates": {
     "width": "1000",
-    "xAxis": "244.5",
-    "yAxis": "784",
+    "xAxis": "153.4921875",
+    "yAxis": "435.9609375",
     "fontSize": "70",
-    "color": "#41dcfb",
-    "fontStyle": "",
+    "color": "#000",
+    "fontStyle": "'Impact', Charcoal, sans-serif",
     "alignment": "center"
-  },
-  "template": "https://via.placeholder.com/1500"
+  }
 }

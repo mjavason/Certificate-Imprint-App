@@ -29,7 +29,7 @@ let settingsValues = {
   fontStyle: ``,
   alignment: 'center',
 };
-let template = 'https://via.placeholder.com/1500';
+let template = `https://via.placeholder.com/${window.innerHeight}`;
 
 loadImageButton.addEventListener('click', () => {
   const imageUrl = imageURLInput.value; // Path to your image
@@ -45,7 +45,9 @@ function previewFontOptions() {
   });
 }
 
-function loadImage(imageUrl = 'document.jpg') {
+function loadImage(
+  imageUrl = `https://via.placeholder.com/${window.innerHeight}`
+) {
   template = imageUrl;
   documentElement.style.aspectRatio = 0;
   documentElement.style.backgroundImage = `url(${imageUrl})`; // Provide the path to your image
@@ -81,8 +83,8 @@ function loadImage(imageUrl = 'document.jpg') {
 
 function updateText(update) {
   draggableElement.innerText = update;
-  // settingsValues.text = update;
-  // updateSettingsTextArea();
+  data[0] = update;
+  updateSettingsTextArea();
 }
 
 function updateXAxis(update) {

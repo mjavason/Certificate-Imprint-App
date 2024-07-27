@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
+      /* Reset all margins and paddings to zero */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
       .document {
         aspect-ratio: 0;
         background-size: cover;

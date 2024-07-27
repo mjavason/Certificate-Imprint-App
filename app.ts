@@ -84,7 +84,7 @@ function applyStylesFromJSON(styleObject: {
     top: ${styleObject.yAxis}px;
     font-size: ${styleObject.fontSize}px;
     color: ${styleObject.color};
-    font-style: ${styleObject.fontStyle || 'normal'};
+    font-family: ${styleObject.fontStyle || 'normal'};
     text-align: ${styleObject.alignment};
     position: absolute;
   `;
@@ -99,6 +99,12 @@ async function renderMailTemplate(templatePath: string, data: object) {
 
   // Compile the template
   const compiledTemplate = handlebars.compile(emailTemplate);
+  return compiledTemplate(data);
+}
+
+async function secondRender(render: string, data: object) {
+  // Compile the template
+  const compiledTemplate = handlebars.compile(render);
   return compiledTemplate(data);
 }
 
@@ -316,12 +322,16 @@ app.post('/batch-imprint', async (req: Request, res: Response) => {
   const imageDimensions = await getImageSizeFromUrl(templatePath);
   const styles = applyStylesFromJSON(coordinates);
   const savedImages: string[] = [];
+  const renderedHtmlBase = await renderMailTemplate('template.txt', {
+    imageUrl: templatePath, //filePath,
+    imageWidth: imageDimensions.width,
+    imageHeight: imageDimensions.height,
+    bodyWithConfigs: '{{{bodyWithConfigs}}}',
+  });
 
   for (let i = 0; i < textData.length; i++) {
-    const renderedHtml = await renderMailTemplate('template.txt', {
-      imageUrl: 'https://via.placeholder.com/1500', //filePath,
-      imageWidth: imageDimensions.width,
-      imageHeight: imageDimensions.height,
+    console.log('Starting second render', i);
+    const renderedHtml = await secondRender(renderedHtmlBase, {
       bodyWithConfigs: `<div style="${styles}">${textData[i]}</div>`,
     });
 
