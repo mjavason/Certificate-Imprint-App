@@ -135,33 +135,44 @@ async function convertHtmlToPdf(htmlContent: string, outputPath: string) {
  * @param outputPath - The path where the output image will be saved.
  */
 async function convertHtmlToImage(
-  htmlContent: string,
-  outputPath: string,
-  imageWidth: number,
-  imageHeight: number
+  htmlDetails: {
+    htmlContent: string;
+    outputPath: string;
+    imageWidth: number;
+    imageHeight: number;
+  }[]
 ) {
+  let filePaths: string[] = [];
   // Launch a new browser instance
   const browser = await puppeteer.launch();
-  const page = await browser.newPage();
 
-  // Set the HTML content
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  for (let i = 0; i < htmlDetails.length; i++) {
+    const page = await browser.newPage();
 
-  // Set the viewport size
-  await page.setViewport({ width: imageWidth, height: imageHeight });
+    // Set the HTML content
+    await page.setContent(htmlDetails[i].htmlContent, {
+      waitUntil: 'networkidle0',
+    });
 
-  // Capture a screenshot of the page
-  await page.screenshot({
-    path: outputPath,
-    fullPage: true,
-    type: 'jpeg',
-    quality: 100,
-  });
+    // Set the viewport size
+    await page.setViewport({
+      width: htmlDetails[i].imageWidth,
+      height: htmlDetails[i].imageHeight,
+    });
 
+    // Capture a screenshot of the page
+    await page.screenshot({
+      path: htmlDetails[i].outputPath,
+      fullPage: true,
+      type: 'jpeg',
+      quality: 100,
+    });
+
+    filePaths.push(htmlDetails[i].outputPath);
+  }
   // Close the browser
   await browser.close();
-
-  return outputPath;
+  return filePaths;
 }
 
 /**
@@ -315,13 +326,18 @@ app.post('/batch-imprint', async (req: Request, res: Response) => {
   const templatePath = req.body.template; //'https://via.placeholder.com/1500';
   const textData = req.body.data;
   const coordinates = req.body.coordinates;
+  let htmlDetails: {
+    htmlContent: string;
+    outputPath: string;
+    imageWidth: number;
+    imageHeight: number;
+  }[] = [];
 
   if (!templatePath || !textData || !coordinates)
     return res.status(400).send({ success: false, message: 'Data missing' });
 
   const imageDimensions = await getImageSizeFromUrl(templatePath);
   const styles = applyStylesFromJSON(coordinates);
-  const savedImages: string[] = [];
   const renderedHtmlBase = await renderMailTemplate('template.txt', {
     imageUrl: templatePath, //filePath,
     imageWidth: imageDimensions.width,
@@ -335,15 +351,15 @@ app.post('/batch-imprint', async (req: Request, res: Response) => {
       bodyWithConfigs: `<div style="${styles}">${textData[i]}</div>`,
     });
 
-    let imagePath = await convertHtmlToImage(
-      renderedHtml,
-      `${tempDir}/${i}${Date.now()}.jpg`,
-      imageDimensions.width,
-      imageDimensions.height
-    );
-
-    savedImages.push(imagePath);
+    htmlDetails.push({
+      htmlContent: renderedHtml,
+      outputPath: `${tempDir}/${i}${Date.now()}.jpg`,
+      imageWidth: imageDimensions.width,
+      imageHeight: imageDimensions.height,
+    });
   }
+  const savedImages = await convertHtmlToImage(htmlDetails);
+  
   let zipFilePath = `${tempDir}/${Date.now()}.zip`;
   await createZipFromFiles(savedImages, zipFilePath);
 
