@@ -8,9 +8,10 @@ import swaggerUi from 'swagger-ui-express';
 import morgan from 'morgan';
 import os from 'os';
 import fs from 'fs';
-import multer, { FileFilterCallback } from 'multer';
+import path from 'path';
 import handlebars from 'handlebars';
 import imageSize from 'image-size';
+import puppeteer from 'puppeteer';
 
 //#region App Setup
 const app = express();
@@ -57,37 +58,6 @@ app.use(cors());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(morgan('dev'));
 const tempDir = os.tmpdir(); // Get the system temporary directory
-const storage = multer.diskStorage({
-  // destination: function (req, file, cb) {
-  //   cb(null, tempDir); // Use the system temporary directory
-  // },
-  destination: './uploads',
-  filename: function (req, file, cb) {
-    cb(null, file.originalname); // Keep the original file name
-  },
-});
-// Define the file filter function with TypeScript types
-const fileFilter = (
-  req: Request,
-  file: Express.Multer.File,
-  cb: FileFilterCallback
-) => {
-  const allowedTypes = ['document/pdf', 'image/png'];
-
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); // Accept file
-  } else {
-    // cb(new Error('Only jpg and png files are allowed!')); // Reject file
-    cb(null, false);
-  }
-};
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // Limit file size to 5 MB
-  },
-  // fileFilter,
-});
 
 //#endregion
 
@@ -131,40 +101,160 @@ async function renderMailTemplate(templatePath: string, data: object) {
   return compiledTemplate(data);
 }
 
+async function convertHtmlToPdf(htmlContent: string, outputPath: string) {
+  // Launch a new browser instance
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  // Set the HTML content
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+  // Convert the page to PDF
+  await page.pdf({
+    path: outputPath, // Output file path
+    format: 'A4', // Paper format (e.g., 'A4', 'Letter')
+    printBackground: true, // Print background colors and images
+  });
+
+  // Close the browser
+  await browser.close();
+  return outputPath;
+}
+
+/**
+ * Converts HTML content to an image and saves it to the specified output path.
+ *
+ * @param htmlPath - The path to the HTML file to be converted.
+ * @param outputPath - The path where the output image will be saved.
+ */
+async function convertHtmlToImage(
+  htmlContent: string,
+  outputPath: string,
+  imageWidth: number,
+  imageHeight: number
+) {
+  // Launch a new browser instance
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  // Set the HTML content
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+  // Set the viewport size
+  await page.setViewport({ width: imageWidth, height: imageHeight });
+
+  // Capture a screenshot of the page
+  await page.screenshot({
+    path: outputPath,
+    fullPage: true,
+    type: 'jpeg',
+    quality: 100,
+  });
+
+  // Close the browser
+  await browser.close();
+
+  return outputPath;
+}
+
+/**
+ * Send a file as a download to the client.
+ *
+ * @param res - The Express response object.
+ * @param filePath - The path to the file to be downloaded.
+ * @param fileName - Optional. The name to use for the downloaded file.
+ */
+function sendFileAsDownload(
+  res: Response,
+  filePath: string,
+  fileName?: string
+): void {
+  const options: { headers?: { 'Content-Disposition': string } } = {};
+
+  // If a fileName is provided, set the Content-Disposition header with the filename
+  if (fileName) {
+    options.headers = {
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+    };
+  }
+
+  // Use res.download to send the file
+  res.download(
+    filePath,
+    fileName || path.basename(filePath),
+    options,
+    (err) => {
+      if (err) {
+        console.error('Error sending file:', err);
+        res.status(500).send('Error downloading file.');
+      }
+    }
+  );
+}
+
+/**
+ * Get the dimensions of an image from a URL.
+ *
+ * @param url - The URL of the image.
+ * @returns A promise that resolves with the width and height of the image.
+ */
+async function getImageSizeFromUrl(
+  url: string
+): Promise<{ width: number; height: number }> {
+  try {
+    // Fetch the image as a buffer using axios
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const buffer = Buffer.from(response.data, 'binary');
+
+    // Get the image dimensions
+    const dimensions = await imageSize(buffer);
+
+    if (!dimensions || !dimensions.width || !dimensions.height) {
+      throw new Error('Unable to determine image dimensions');
+    }
+
+    return { width: dimensions.width, height: dimensions.height };
+  } catch (error: any) {
+    throw new Error(`Failed to get image size: ${error.message}`);
+  }
+}
+
 /**
  * @swagger
  * /batch-imprint:
  *   post:
- *     summary: Upload a template file to be imprinted with multiple different data
- *     description: With the coordinates and data, just leave the rest to us. You'll get a zip file with all the images.
+ *     summary: Upload imprint data to be processed
+ *     description: With the coordinates, template, and data, just leave the rest to us. You'll get a zip file with all the images.
  *     tags:
  *       - Imprint
  *     requestBody:
- *       description: Image file and data to be processed
+ *       description: JSON object containing imprint data, coordinates, and template information
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               file:
- *                 type: string
- *                 format: binary
  *               data:
  *                 type: object
- *                 description: JSON object with coordinates and other imprint data
+ *                 description: Data for imprinting
  *                 properties:
- *                   coordinates:
- *                     type: object
- *                     description: Coordinates for imprinting
- *                     properties:
- *                       x:
- *                         type: number
- *                       y:
- *                         type: number
  *                   text:
  *                     type: string
  *                     description: Text to imprint
+ *               coordinates:
+ *                 type: object
+ *                 description: Coordinates for imprinting
+ *                 properties:
+ *                   x:
+ *                     type: number
+ *                     description: X coordinate
+ *                   y:
+ *                     type: number
+ *                     description: Y coordinate
+ *               template:
+ *                 type: string
+ *                 description: URL or identifier for the template to be used
  *     responses:
  *       '200':
  *         description: Successfully processed the request
@@ -180,38 +270,36 @@ async function renderMailTemplate(templatePath: string, data: object) {
  *                 data:
  *                   type: string
  *       '400':
- *         description: Bad request, file not uploaded
+ *         description: Bad request, invalid data
  */
+app.post('/batch-imprint', async (req: Request, res: Response) => {
+  const templatePath = req.body.template; //'https://via.placeholder.com/1500';
+  const textData = req.body.data.text;
+  const coordinates = req.body.coordinates;
 
-app.post(
-  '/batch-imprint',
-  upload.single('file'),
-  async (req: Request, res: Response) => {
-    if (!req.file) {
-      return res.status(400).send({
-        success: false,
-        message: 'No file uploaded. Only jpg and png types accepted',
-      });
-    }
+  if (!templatePath || !textData || !coordinates)
+    return res.status(400).send({ success: false, message: 'Data missing' });
 
-    console.log(req.body.data);
+  const imageDimensions = await getImageSizeFromUrl(templatePath);
+  const styles = applyStylesFromJSON(coordinates);
 
-    const filePath = req.file.path.replace(/\\/g, '/');
-    const imageDimensions = imageSize(filePath);
+  const renderedHtml = await renderMailTemplate('template.txt', {
+    imageUrl: 'https://via.placeholder.com/1500', //filePath,
+    imageWidth: imageDimensions.width,
+    imageHeight: imageDimensions.height,
+    bodyWithConfigs: `<div style="${styles}">${textData}</div>`,
+  });
 
-    const styles = applyStylesFromJSON(JSON.parse(req.body.data));
+  let imagePath = await convertHtmlToImage(
+    renderedHtml,
+    `${tempDir}/${Date.now()}.jpg`,
+    imageDimensions.width,
+    imageDimensions.height
+  );
 
-    const renderedHtml = await renderMailTemplate('template.html', {
-      imageUrl: filePath,
-      imageWidth: imageDimensions.width,
-      imageHeight: imageDimensions.height,
-      bodyWithConfigs: `<div style="${styles}">The world is your canvas</div>`,
-    });
-
-    // console.log(renderedHtml);
-    return res.send(renderedHtml);
-  }
-);
+  // console.log(renderedHtml);
+  return sendFileAsDownload(res, imagePath);
+});
 //#endregion
 
 //#region Server Setup
@@ -294,6 +382,7 @@ app.use((req: Request, res: Response) => {
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // throw Error('This is a sample error');
 
+  // console.log(err);
   console.log(`${'\x1b[31m'}${err.message}${'\x1b][0m]'} `);
   return res
     .status(500)
